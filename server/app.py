@@ -4,6 +4,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from models import db
 from config import Config
+from resources.auth import RegisterResource
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -20,6 +21,7 @@ class HelloWorld(Resource):
         return {'message': 'Hello World! MessageMe API is running!'}, 200
 
 api.add_resource(HelloWorld, '/')
+api.add_resource(RegisterResource, '/auth/register')
 
 with app.app_context():
     db.create_all()
