@@ -1,10 +1,32 @@
 from flask import request
 from flask_restful import Resource
 from flask_bcrypt import Bcrypt
+from flask_jwt_extended import create_access_token
 from models import db, User
 
 bcrypt = Bcrypt()
 
+class LoginResource(Resource):
+    def post(self):
+        data = request.get_json()
+        
+        if not data or not data.get('email') or not data.get('password'):
+            return {'message': 'Missing email or password'}, 400
+        
+        user = User.query.filter_by(email=data['email']).first()
+        
+        if user and bcrypt.check_password_hash(user.password_hash, data['password']):
+            access_token = create_access_token(identity=user.id)
+            return {
+                'token': access_token,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email
+                }
+            }, 200
+        
+        return {'message': 'Invalid credentials'}, 401
 class RegisterResource(Resource):
     def post(self):
         data = request.get_json()
