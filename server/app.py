@@ -5,6 +5,7 @@ from flask_jwt_extended import JWTManager
 from models import db
 from config import Config
 from resources.auth import RegisterResource, LoginResource
+from resources.user import UserListResource, UserResource
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -23,6 +24,8 @@ class HelloWorld(Resource):
 api.add_resource(HelloWorld, '/')
 api.add_resource(RegisterResource, '/auth/register')
 api.add_resource(LoginResource, '/auth/login')
+api.add_resource(UserListResource, '/users')
+api.add_resource(UserResource, '/users/<int:user_id>')
 
 with app.app_context():
     db.create_all()
