@@ -3,6 +3,15 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+# Junction table for many-to-many relationship
+user_groups = db.Table('user_groups',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('group_id', db.Integer, db.ForeignKey('groups.id'), primary_key=True),
+    db.Column('joined_at', db.DateTime, default=datetime.utcnow)
+)
+
+
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -10,6 +19,17 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Group(db.Model):
+       __tablename__ = 'groups'
+       id = db.Column(db.Integer, primary_key=True)
+       name = db.Column(db.String(100), nullable=False)
+       description = db.Column(db.Text)
+       created_at = db.Column(db.DateTime, default=datetime.utcnow)
+       
+       # Many-to-many relationship
+       members = db.relationship('User', secondary=user_groups, backref='groups')
+       
+       def __repr__(self):
+           return f'<Group {self.name}>'    
     
-    def __repr__(self):
-        return f'<User {self.username}>'

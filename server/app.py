@@ -6,6 +6,7 @@ from models import db
 from config import Config
 from resources.auth import RegisterResource, LoginResource
 from resources.user import UserListResource, UserResource
+from resources.group import GroupListResource, GroupResource
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -26,6 +27,8 @@ api.add_resource(RegisterResource, '/auth/register')
 api.add_resource(LoginResource, '/auth/login')
 api.add_resource(UserListResource, '/users')
 api.add_resource(UserResource, '/users/<int:user_id>')
+api.add_resource(GroupListResource, '/groups')
+api.add_resource(GroupResource, '/groups/<int:group_id>')
 
 with app.app_context():
     db.create_all()
