@@ -83,3 +83,18 @@ class GroupMembersResource(Resource):
                 'name': group.name
             }
         }, 201
+    
+    @jwt_required()
+    def delete(self, group_id):
+        """DELETE /groups/<id>/members - Leave a group"""
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        group = Group.query.get_or_404(group_id)
+        
+        if group not in user.groups:
+            return {'message': 'Not in group'}, 400
+        
+        user.groups.remove(group)
+        db.session.commit()
+        
+        return {'message': 'Left group successfully'}, 200
