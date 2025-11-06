@@ -61,3 +61,25 @@ class GroupResource(Resource):
                 'username': m.username
             } for m in group.members]
         }, 200
+    
+class GroupMembersResource(Resource):
+    @jwt_required()
+    def post(self, group_id):
+        """POST /groups/<id>/members - Join a group"""
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        group = Group.query.get_or_404(group_id)
+        
+        if group in user.groups:
+            return {'message': 'Already in group'}, 400
+        
+        user.groups.append(group)
+        db.session.commit()
+        
+        return {
+            'message': 'Joined group successfully',
+            'group': {
+                'id': group.id,
+                'name': group.name
+            }
+        }, 201
