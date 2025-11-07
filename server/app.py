@@ -7,6 +7,7 @@ from config import Config
 from resources.auth import RegisterResource, LoginResource
 from resources.user import UserListResource, UserResource
 from resources.group import GroupListResource, GroupResource, GroupMembersResource
+from resources.message import MessageListResource, ConversationResource
 
 
 app = Flask(__name__)
@@ -31,6 +32,8 @@ api.add_resource(UserResource, '/users/<int:user_id>')
 api.add_resource(GroupListResource, '/groups')
 api.add_resource(GroupResource, '/groups/<int:group_id>')
 api.add_resource(GroupMembersResource, '/groups/<int:group_id>/members')
+api.add_resource(MessageListResource, '/messages')
+api.add_resource(ConversationResource, '/users/<int:other_user_id>/messages')
 
 with app.app_context():
     db.create_all()
