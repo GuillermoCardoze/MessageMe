@@ -28,6 +28,7 @@ class MessageListResource(Resource):
         }, 200
     
     @jwt_required()
+    
     def post(self):
         """POST /messages - Send a new message"""
         user_id = get_jwt_identity()

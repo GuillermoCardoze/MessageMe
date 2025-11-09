@@ -10,8 +10,6 @@ user_groups = db.Table('user_groups',
     db.Column('joined_at', db.DateTime, default=datetime.utcnow)
 )
 
-
-
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)

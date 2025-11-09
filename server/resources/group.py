@@ -62,6 +62,37 @@ class GroupResource(Resource):
             } for m in group.members]
         }, 200
     
+    @jwt_required()
+    def patch(self, group_id):
+        """PATCH /groups/<id> - Update group"""
+        group = Group.query.get_or_404(group_id)
+        data = request.get_json()
+        
+        if 'name' in data:
+            group.name = data['name']
+        if 'description' in data:
+            group.description = data['description']
+        
+        db.session.commit()
+        
+        return {
+            'message': 'Group updated successfully',
+            'group': {
+                'id': group.id,
+                'name': group.name,
+                'description': group.description
+            }
+        }, 200
+    
+    @jwt_required()
+    def delete(self, group_id):
+        """DELETE /groups/<id> - Delete group"""
+        group = Group.query.get_or_404(group_id)
+        db.session.delete(group)
+        db.session.commit()
+        
+        return {'message': 'Group deleted successfully'}, 200
+    
 class GroupMembersResource(Resource):
     @jwt_required()
     def post(self, group_id):
