@@ -6,16 +6,24 @@ from models import db, User
 class UserListResource(Resource):
     @jwt_required()
     def get(self):
-        """GET /users - Get all users (protected route)"""
-        users = User.query.all()
+        """GET /users - Get all users with optional search"""
+        search = request.args.get('search', '')
+        
+        if search:
+            # Search by username (case-insensitive)
+            users = User.query.filter(User.username.ilike(f'%{search}%')).all()
+        else:
+            users = User.query.all()
+        
         return {
             'users': [{
                 'id': u.id,
                 'username': u.username,
                 'email': u.email
-            } for u in users]
-        }, 200
-    
+            } for u in users],
+            'count': len(users),
+            'search': search if search else None
+        }, 200    
 
 
 class UserResource(Resource):

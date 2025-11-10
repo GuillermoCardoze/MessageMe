@@ -6,8 +6,15 @@ from models import db, User, Group
 class GroupListResource(Resource):
     @jwt_required()
     def get(self):
-        """GET /groups - Get all groups"""
-        groups = Group.query.all()
+        """GET /groups - Get all groups with optional search"""
+        search = request.args.get('search', '')
+        
+        if search:
+            # Search by group name (case-insensitive)
+            groups = Group.query.filter(Group.name.ilike(f'%{search}%')).all()
+        else:
+            groups = Group.query.all()
+        
         return {
             'groups': [{
                 'id': g.id,
@@ -15,9 +22,11 @@ class GroupListResource(Resource):
                 'description': g.description,
                 'member_count': len(g.members),
                 'created_at': g.created_at.isoformat()
-            } for g in groups]
+            } for g in groups],
+            'count': len(groups),
+            'search': search if search else None
         }, 200
-    
+        
     @jwt_required()
     def post(self):
         """POST /groups - Create a new group"""
