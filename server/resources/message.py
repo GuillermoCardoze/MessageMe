@@ -96,3 +96,19 @@ class ConversationResource(Resource):
                 'is_mine': m.sender_id == user_id
             } for m in messages]
         }, 200
+    
+class MessageResource(Resource):
+    @jwt_required()
+    def delete(self, message_id):
+        """DELETE /messages/<id> - Delete message"""
+        user_id = get_jwt_identity()
+        message = Message.query.get_or_404(message_id)
+        
+        # Only sender can delete their message
+        if message.sender_id != user_id:
+            return {'message': 'Unauthorized'}, 403
+        
+        db.session.delete(message)
+        db.session.commit()
+        
+        return {'message': 'Message deleted successfully'}, 200
