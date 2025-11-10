@@ -6,12 +6,23 @@ from models import db, Message, User
 class MessageListResource(Resource):
     @jwt_required()
     def get(self):
-        """GET /messages - Get all messages for current user"""
+        """GET /messages - Get all messages for current user with optional date filter"""
         user_id = get_jwt_identity()
         
-        messages = Message.query.filter(
+        # Get optional date parameters
+        days = request.args.get('days', type=int)  # e.g., ?days=7 for last 7 days
+        
+        query = Message.query.filter(
             (Message.sender_id == user_id) | (Message.recipient_id == user_id)
-        ).order_by(Message.timestamp.desc()).all()
+        )
+        
+        # Filter by date if provided
+        if days:
+            from datetime import datetime, timedelta
+            cutoff_date = datetime.utcnow() - timedelta(days=days)
+            query = query.filter(Message.timestamp >= cutoff_date)
+        
+        messages = query.order_by(Message.timestamp.desc()).all()
         
         return {
             'messages': [{
@@ -24,11 +35,12 @@ class MessageListResource(Resource):
                 'timestamp': m.timestamp.isoformat(),
                 'is_read': m.is_read,
                 'is_mine': m.sender_id == user_id
-            } for m in messages]
+            } for m in messages],
+            'count': len(messages),
+            'days_filter': days if days else None
         }, 200
-    
+        
     @jwt_required()
-    
     def post(self):
         """POST /messages - Send a new message"""
         user_id = get_jwt_identity()
