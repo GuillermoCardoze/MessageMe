@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { messageAPI, userAPI } from '../services/api'
 
 function Messages() {
+  const location = useLocation()
   const [messages, setMessages] = useState([])
   const [users, setUsers] = useState([])
   const [selectedUser, setSelectedUser] = useState(null)
@@ -13,10 +14,20 @@ function Messages() {
   const [error, setError] = useState('')
   const { user: currentUser } = useAuth()
 
-  useEffect(() => {
-    fetchUsers()
-    fetchMessages()
-  }, [])
+useEffect(() => {
+  fetchUsers()
+  fetchMessages()
+}, [])
+
+// Auto-select user if coming from User List
+useEffect(() => {
+  if (location.state?.selectedUserId && users.length > 0) {
+    const user = users.find(u => u.id === location.state.selectedUserId)
+    if (user) {
+      selectUser(user)
+    }
+  }
+}, [users, location.state])
 
   const fetchUsers = async () => {
     try {
@@ -137,31 +148,59 @@ function Messages() {
                 ) : conversation.length === 0 ? (
                   <p style={{ textAlign: 'center', color: '#666' }}>No messages yet. Start the conversation!</p>
                 ) : (
-                  conversation.map(msg => (
+                conversation.map(msg => (
+                <div
+                    key={msg.id}
+                    style={{
+                    marginBottom: '15px',
+                    display: 'flex',
+                    justifyContent: msg.is_mine ? 'flex-end' : 'flex-start',
+                    alignItems: 'flex-start',
+                    gap: '8px'
+                    }}
+                >
                     <div
-                      key={msg.id}
-                      style={{
-                        marginBottom: '15px',
-                        display: 'flex',
-                        justifyContent: msg.is_mine ? 'flex-end' : 'flex-start'
-                      }}
+                    style={{
+                        maxWidth: '70%',
+                        padding: '10px 15px',
+                        borderRadius: '12px',
+                        backgroundColor: msg.is_mine ? '#007bff' : '#e9ecef',
+                        color: msg.is_mine ? 'white' : 'black'
+                    }}
                     >
-                      <div
-                        style={{
-                          maxWidth: '70%',
-                          padding: '10px 15px',
-                          borderRadius: '12px',
-                          backgroundColor: msg.is_mine ? '#007bff' : '#e9ecef',
-                          color: msg.is_mine ? 'white' : 'black'
-                        }}
-                      >
-                        <p style={{ margin: '0 0 5px 0' }}>{msg.content}</p>
-                        <small style={{ opacity: 0.8, fontSize: '12px' }}>
-                          {new Date(msg.timestamp).toLocaleString()}
-                        </small>
-                      </div>
+                    <p style={{ margin: '0 0 5px 0' }}>{msg.content}</p>
+                    <small style={{ opacity: 0.8, fontSize: '12px' }}>
+                        {new Date(msg.timestamp).toLocaleString()}
+                    </small>
                     </div>
-                  ))
+                    
+                    {msg.is_mine && (
+                    <button
+                        onClick={async () => {
+                        if (window.confirm('Delete this message?')) {
+                            try {
+                            await messageAPI.delete(msg.id)
+                            selectUser(selectedUser)
+                            } catch (err) {
+                            setError('Failed to delete message')
+                            }
+                        }
+                        }}
+                        style={{
+                        padding: '4px 8px',
+                        backgroundColor: '#dc3545',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                        }}
+                    >
+                        🗑️
+                    </button>
+                    )}
+                </div>
+                ))
                 )}
               </div>
 

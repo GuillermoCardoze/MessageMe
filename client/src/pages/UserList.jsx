@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { userAPI } from '../services/api'
+import { useNavigate } from 'react-router-dom'
 
 function UserList() {
+  const navigate = useNavigate()
   const [users, setUsers] = useState([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
@@ -132,8 +134,7 @@ function UserList() {
                       borderRadius: '4px',
                       cursor: 'pointer'
                     }}
-                    onClick={() => alert(`Message feature coming soon! Will message ${user.username}`)}
-                  >
+                    onClick={() => navigate('/messages', { state: { selectedUserId: user.id } })}                  >
                     Message
                   </button>
                 )}
