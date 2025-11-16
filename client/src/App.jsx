@@ -5,6 +5,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import UserList from './pages/UserList'
 import Messages from './pages/Messages'
+import Groups from './pages/Groups'
 
 function App() {
   const { isAuthenticated, loading } = useAuth()
@@ -49,6 +50,11 @@ function App() {
       <Route 
         path="/messages" 
         element={isAuthenticated ? <Messages /> : <Navigate to="/login" />} 
+      />
+
+      <Route 
+        path="/groups" 
+        element={isAuthenticated ? <Groups /> : <Navigate to="/login" />} 
       />
     </Routes>
   )
