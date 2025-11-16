@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 function Dashboard() {
   const { user, logout } = useAuth()
@@ -35,6 +35,48 @@ function Dashboard() {
         <p><strong>Email:</strong> {user?.email}</p>
         <p><strong>User ID:</strong> {user?.id}</p>
       </div>
+
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+     <Link 
+       to="/users"
+       style={{ 
+         padding: '10px 20px', 
+         backgroundColor: '#007bff', 
+         color: 'white', 
+         textDecoration: 'none',
+         borderRadius: '4px',
+         textAlign: 'center'
+       }}
+     >
+       👥 View Users
+     </Link>
+     <Link 
+       to="/groups"
+       style={{ 
+         padding: '10px 20px', 
+         backgroundColor: '#6c757d', 
+         color: 'white', 
+         textDecoration: 'none',
+         borderRadius: '4px',
+         textAlign: 'center'
+       }}
+     >
+       👫 Groups
+     </Link>
+     <Link 
+       to="/messages"
+       style={{ 
+         padding: '10px 20px', 
+         backgroundColor: '#17a2b8', 
+         color: 'white', 
+         textDecoration: 'none',
+         borderRadius: '4px',
+         textAlign: 'center'
+       }}
+     >
+       💬 Messages
+     </Link>
+      </div>   
 
       <div style={{ backgroundColor: '#e9ecef', padding: '20px', borderRadius: '8px' }}>
         <h3>🎉 Your frontend is connected to the backend!</h3>

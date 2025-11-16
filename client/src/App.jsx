@@ -3,6 +3,8 @@ import { useAuth } from './context/AuthContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
+import UserList from './pages/UserList'
+import Messages from './pages/Messages'
 
 function App() {
   const { isAuthenticated, loading } = useAuth()
@@ -33,10 +35,20 @@ function App() {
         element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} 
       />
 
+      <Route 
+        path="/users" 
+        element={isAuthenticated ? <UserList /> : <Navigate to="/login" />} 
+      />
+
       {/* Default redirect */}
       <Route 
         path="/" 
         element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} 
+      />
+
+      <Route 
+        path="/messages" 
+        element={isAuthenticated ? <Messages /> : <Navigate to="/login" />} 
       />
     </Routes>
   )
