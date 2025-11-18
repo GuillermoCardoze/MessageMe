@@ -13,7 +13,7 @@ from resources.message import MessageListResource, ConversationResource, Message
 app = Flask(__name__)
 app.config.from_object(Config)
 
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 jwt = JWTManager(app)
 api = Api(app)
 

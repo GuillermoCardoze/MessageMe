@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { messageAPI, userAPI } from '../services/api'
 
 function Messages() {
+  const messagesEndRef = useRef(null)
   const location = useLocation()
   const [messages, setMessages] = useState([])
   const [users, setUsers] = useState([])
@@ -29,7 +30,7 @@ useEffect(() => {
   }
 }, [users, location.state])
 
-// Auto-refresh conversation every 5 seconds
+// Auto-refresh conversation every 3 seconds
 useEffect(() => {
   if (!selectedUser) return
 
@@ -38,11 +39,19 @@ useEffect(() => {
     messageAPI.getConversation(selectedUser.id)
       .then(data => setConversation(data.messages))
       .catch(err => console.error('Auto-refresh failed:', err))
-  }, 1000) // 1 seconds
+  }, 3000) // 3 seconds
 
   // Cleanup interval when component unmounts or user changes
   return () => clearInterval(interval)
 }, [selectedUser])
+
+// Auto-scroll to bottom only when new messages arrive
+useEffect(() => {
+  const lastMessage = conversation[conversation.length - 1]
+  if (lastMessage) {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+}, [conversation.length]) // Only trigger when length changes, not content
 
   const fetchUsers = async () => {
     try {
@@ -217,6 +226,7 @@ useEffect(() => {
                 </div>
                 ))
                 )}
+                <div ref={messagesEndRef} />
               </div>
 
               {/* Send Message Form */}
