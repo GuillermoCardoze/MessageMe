@@ -29,6 +29,21 @@ useEffect(() => {
   }
 }, [users, location.state])
 
+// Auto-refresh conversation every 5 seconds
+useEffect(() => {
+  if (!selectedUser) return
+
+  const interval = setInterval(() => {
+    // Silently refresh conversation
+    messageAPI.getConversation(selectedUser.id)
+      .then(data => setConversation(data.messages))
+      .catch(err => console.error('Auto-refresh failed:', err))
+  }, 1000) // 1 seconds
+
+  // Cleanup interval when component unmounts or user changes
+  return () => clearInterval(interval)
+}, [selectedUser])
+
   const fetchUsers = async () => {
     try {
       const data = await userAPI.getAll()
