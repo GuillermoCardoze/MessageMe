@@ -55,8 +55,49 @@ def handle_join(data):
         join_room(f'user_{user_id}')
         print(f'User {user_id} joined their room')
 
+@socketio.on('send_message')
+def handle_send_message(data):
+    """Handle incoming message from client"""
+    try:
+        sender_id = data.get('sender_id')
+        recipient_id = data.get('recipient_id')
+        content = data.get('content')
+        
+        print(f'Message from user {sender_id} to user {recipient_id}: {content}')
+        
+        # Save message to database
+        from models import Message
+        new_message = Message(
+            sender_id=sender_id,
+            recipient_id=recipient_id,
+            content=content
+        )
+        db.session.add(new_message)
+        db.session.commit()
+        
+        # Prepare message data
+        message_data = {
+            'id': new_message.id,
+            'sender_id': new_message.sender_id,
+            'recipient_id': new_message.recipient_id,
+            'content': new_message.content,
+            'timestamp': new_message.timestamp.isoformat()
+        }
+        
+        # Send to recipient's room
+        emit('new_message', message_data, room=f'user_{recipient_id}')
+        
+        # Also send back to sender for confirmation
+        emit('message_sent', message_data)
+        
+        print(f'Message saved and sent!')
+        
+    except Exception as e:
+        print(f'Error sending message: {e}')
+        emit('message_error', {'error': str(e)})
+
 with app.app_context():
     db.create_all()
-    
+
 if __name__ == '__main__':
     socketio.run(app, debug=True, port=5000)
