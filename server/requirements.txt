@@ -6,6 +6,7 @@ asttokens==2.4.1
 backcall==0.2.0
 backports.zoneinfo==0.2.1
 bcrypt==4.2.0
+bidict==0.23.1
 blinker==1.8.2
 certifi==2024.2.2
 chardet==3.0.4
@@ -15,6 +16,8 @@ colorama==0.4.6
 decorator==5.1.1
 distlib==0.3.8
 Django==4.2.16
+dnspython==2.6.1
+eventlet==0.39.1
 exceptiongroup==1.2.2
 executing==2.0.1
 Faker==32.1.0
@@ -25,8 +28,10 @@ Flask-Cors==5.0.0
 Flask-JWT-Extended==4.6.0
 Flask-Migrate==4.0.7
 Flask-RESTful==0.3.10
+Flask-SocketIO==5.5.1
 Flask-SQLAlchemy==3.1.1
 greenlet==3.1.1
+h11==0.16.0
 idna==2.8
 importlib_metadata==8.5.0
 importlib_resources==6.4.5
@@ -53,8 +58,11 @@ Pygments==2.18.0
 PyJWT==2.9.0
 pytest==8.3.2
 python-dateutil==2.9.0.post0
+python-engineio==4.12.3
+python-socketio==5.15.0
 pytz==2024.2
 requests==2.27.1
+simple-websocket==1.1.0
 six==1.16.0
 SQLAlchemy==2.0.35
 SQLAlchemy-serializer==1.4.12
@@ -68,4 +76,5 @@ virtualenv==20.26.2
 watchdog==4.0.2
 wcwidth==0.2.13
 Werkzeug==3.0.4
+wsproto==1.2.0
 zipp==3.20.2
