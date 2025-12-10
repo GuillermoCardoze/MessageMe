@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { messageAPI, userAPI } from '../services/api'
+import socketService from '../services/socket'
 
 function Messages() {
   const messagesEndRef = useRef(null)
@@ -31,19 +32,34 @@ useEffect(() => {
 }, [users, location.state])
 
 // Auto-refresh conversation every 3 seconds
+// useEffect(() => {
+//   if (!selectedUser) return
+
+//   const interval = setInterval(() => {
+//     // Silently refresh conversation
+//     messageAPI.getConversation(selectedUser.id)
+//       .then(data => setConversation(data.messages))
+//       .catch(err => console.error('Auto-refresh failed:', err))
+//   }, 3000) // 3 seconds
+
+//   // Cleanup interval when component unmounts or user changes
+//   return () => clearInterval(interval)
+// }, [selectedUser])
+
+// Listen for real-time messages via WebSocket
 useEffect(() => {
-  if (!selectedUser) return
+  socketService.onNewMessage((message) => {
+    console.log('📨 New message received:', message);
+    // Refresh conversation if we're talking to this person
+    if (selectedUser && (message.sender_id === selectedUser.id || message.recipient_id === selectedUser.id)) {
+      selectUser(selectedUser);
+    }
+  });
 
-  const interval = setInterval(() => {
-    // Silently refresh conversation
-    messageAPI.getConversation(selectedUser.id)
-      .then(data => setConversation(data.messages))
-      .catch(err => console.error('Auto-refresh failed:', err))
-  }, 3000) // 3 seconds
-
-  // Cleanup interval when component unmounts or user changes
-  return () => clearInterval(interval)
-}, [selectedUser])
+  return () => {
+    socketService.offNewMessage();
+  };
+}, [selectedUser]);
 
 // Auto-scroll to bottom only when new messages arrive
 useEffect(() => {
@@ -88,25 +104,30 @@ useEffect(() => {
     }
   }
 
-  const sendMessage = async (e) => {
-    e.preventDefault()
-    if (!newMessage.trim() || !selectedUser) return
+const sendMessage = async (e) => {
+  e.preventDefault()
+  if (!newMessage.trim() || !selectedUser) return
 
-    try {
-      await messageAPI.send({
-        recipient_id: selectedUser.id,
-        content: newMessage
-      })
-      
-      setNewMessage('')
-      // Refresh conversation
+  try {
+    // Send via WebSocket instead of REST API
+    socketService.sendMessage(
+      currentUser.id,
+      selectedUser.id,
+      newMessage
+    )
+    
+    setNewMessage('')
+    
+    // Refresh conversation to show the message we just sent
+    setTimeout(() => {
       selectUser(selectedUser)
-    } catch (err) {
-      setError('Failed to send message')
-      console.error(err)
-    }
+    }, 100)
+    
+  } catch (err) {
+    setError('Failed to send message')
+    console.error(err)
   }
-
+}
   return (
     <div style={{ maxWidth: '1200px', margin: '50px auto', padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>

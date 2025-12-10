@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
+import socketService from '../services/socket'
 
 const AuthContext = createContext();
 
@@ -38,6 +39,9 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
+      // Connect to WebSocket
+      socketService.connect(data.user.id);
+      
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
@@ -53,13 +57,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  };
-
+const logout = () => {
+  socketService.disconnect();
+  setUser(null);
+  setToken(null);
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
   const value = {
     user,
     token,
