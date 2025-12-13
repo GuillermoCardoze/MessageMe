@@ -15,6 +15,7 @@ function Messages() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const { user: currentUser } = useAuth()
+  const [connectionStatus, setConnectionStatus] = useState('connected')
 
 useEffect(() => {
   fetchUsers()
@@ -47,20 +48,47 @@ useEffect(() => {
 // }, [selectedUser])
 
 // Listen for real-time messages via WebSocket
+// Listen for real-time messages and connection status via WebSocket
+// Listen for real-time messages and connection status via WebSocket
 useEffect(() => {
+  // Listen for new messages
   socketService.onNewMessage((message) => {
     console.log('📨 New message received:', message);
-    // Refresh conversation if we're talking to this person
     if (selectedUser && (message.sender_id === selectedUser.id || message.recipient_id === selectedUser.id)) {
       selectUser(selectedUser);
     }
   });
 
+  // Listen for connection status changes
+  if (socketService.socket) {
+    socketService.socket.on('connect', () => {
+      setConnectionStatus('connected');
+    });
+
+    socketService.socket.on('disconnect', () => {
+      setConnectionStatus('disconnected');
+    });
+
+    socketService.socket.on('reconnect_attempt', () => {
+      setConnectionStatus('reconnecting');
+    });
+
+    socketService.socket.on('reconnect', () => {
+      setConnectionStatus('connected');
+    });
+  }
+
   return () => {
     socketService.offNewMessage();
+    // Clean up listeners
+    if (socketService.socket) {
+      socketService.socket.off('connect');
+      socketService.socket.off('disconnect');
+      socketService.socket.off('reconnect_attempt');
+      socketService.socket.off('reconnect');
+    }
   };
 }, [selectedUser]);
-
 // Auto-scroll to bottom only when new messages arrive
 useEffect(() => {
   const lastMessage = conversation[conversation.length - 1]
@@ -131,7 +159,24 @@ const sendMessage = async (e) => {
   return (
     <div style={{ maxWidth: '1200px', margin: '50px auto', padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ margin: 0 }}>Messages</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+  <h1 style={{ margin: 0 }}>Messages</h1>
+  {connectionStatus === 'connected' && (
+    <span style={{ fontSize: '12px', color: '#28a745', display: 'flex', alignItems: 'center', gap: '5px' }}>
+      🟢 Connected
+    </span>
+  )}
+  {connectionStatus === 'disconnected' && (
+    <span style={{ fontSize: '12px', color: '#dc3545', display: 'flex', alignItems: 'center', gap: '5px' }}>
+      🔴 Disconnected
+    </span>
+  )}
+  {connectionStatus === 'reconnecting' && (
+    <span style={{ fontSize: '12px', color: '#ffc107', display: 'flex', alignItems: 'center', gap: '5px' }}>
+      🟡 Reconnecting...
+    </span>
+  )}
+</div>
         <Link 
           to="/dashboard"
           style={{ 
