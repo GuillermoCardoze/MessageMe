@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { groupAPI } from '../services/api'
 
@@ -12,6 +12,7 @@ function Groups() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const { user } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchGroups()
@@ -229,6 +230,19 @@ function Groups() {
                   
                   <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
                     <button
+                        onClick={() => navigate(`/groups/${group.id}/chat`)}
+                        style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                        }}
+                    >
+                        💬 Chat
+                    </button>               
+                    <button
                       onClick={() => viewGroupDetails(group.id)}
                       style={{
                         padding: '8px 16px',
@@ -239,6 +253,7 @@ function Groups() {
                         cursor: 'pointer'
                       }}
                     >
+                    
                       View Members
                     </button>
                     

@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import UserList from './pages/UserList'
 import Messages from './pages/Messages'
 import Groups from './pages/Groups'
+import GroupChat from './pages/GroupChat'
 
 function App() {
   const { isAuthenticated, loading } = useAuth()
@@ -55,6 +56,11 @@ function App() {
       <Route 
         path="/groups" 
         element={isAuthenticated ? <Groups /> : <Navigate to="/login" />} 
+      />
+
+      <Route 
+        path="/groups/:groupId/chat" 
+        element={isAuthenticated ? <GroupChat /> : <Navigate to="/login" />} 
       />
     </Routes>
   )

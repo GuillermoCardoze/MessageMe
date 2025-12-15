@@ -2,6 +2,7 @@ from flask import Flask
 from flask_restful import Api, Resource
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room, leave_room
+from datetime import datetime
 from flask_jwt_extended import JWTManager
 from models import db
 from config import Config
@@ -94,6 +95,62 @@ def handle_send_message(data):
         
     except Exception as e:
         print(f'Error sending message: {e}')
+        emit('message_error', {'error': str(e)})
+
+@socketio.on('join_group')
+def handle_join_group(data):
+    """User joins a group room"""
+    group_id = data.get('group_id')
+    user_id = data.get('user_id')
+    
+    if group_id:
+        join_room(f'group_{group_id}')
+        print(f'User {user_id} joined group room {group_id}')
+        emit('joined_group', {'group_id': group_id}, room=f'user_{user_id}')
+
+@socketio.on('leave_group')
+def handle_leave_group(data):
+    """User leaves a group room"""
+    group_id = data.get('group_id')
+    user_id = data.get('user_id')
+    
+    if group_id:
+        leave_room(f'group_{group_id}')
+        print(f'User {user_id} left group room {group_id}')
+
+@socketio.on('send_group_message')
+def handle_send_group_message(data):
+    """Handle incoming group message from client"""
+    try:
+        sender_id = data.get('sender_id')
+        group_id = data.get('group_id')
+        content = data.get('content')
+        
+        print(f'Group message from user {sender_id} to group {group_id}: {content}')
+        
+        # For now, we'll just broadcast the message
+        # (You could save to a GroupMessage table if you create one)
+        
+        # Get sender info
+        from models import User
+        sender = User.query.get(sender_id)
+        
+        # Prepare message data
+        message_data = {
+            'group_id': group_id,
+            'sender_id': sender_id,
+            'sender_username': sender.username if sender else 'Unknown',
+            'content': content,
+            'timestamp': datetime.utcnow().isoformat()
+        }
+        
+        # Broadcast to everyone in the group room
+        emit('new_group_message', message_data, room=f'group_{group_id}')
+        
+        print(f'Group message broadcasted!')
+        
+    except Exception as e:
+        print(f'Error sending group message: {e}')
         emit('message_error', {'error': str(e)})
 
 with app.app_context():
